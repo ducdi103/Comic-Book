@@ -1,139 +1,49 @@
 <!DOCTYPE html>
 <html lang="vi">
 <head>
-  <meta charset="utf-8">
-  <meta http-equiv="X-UA-Compatible" content="IE=edge">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Đọc Truyện - Lumia 520</title>
-  <style>
-    body { font-family: Tahoma, sans-serif; margin:0; padding:0; background:#fff; color:#000; }
-    .header { background:#eee; padding:10px; text-align:center; font-weight:bold; border-bottom:1px solid #ccc; }
-    .section { padding:10px; }
-    .genre-btn { display:block; padding:10px; background:#f5f5f5; border:1px solid #ccc; margin-bottom:6px; text-decoration:none; color:#000; border-radius:6px; }
-    .story-list, .confirm-box { display:none; margin-top:10px; }
-    .story-item { padding:8px; border:1px solid #ddd; border-radius:4px; margin-bottom:6px; background:#fafafa; cursor:pointer; }
-    .nav-btn, .back-btn, .confirm-btn { display:inline-block; margin-top:10px; padding:6px 10px; background:#ddd; border:none; border-radius:4px; cursor:pointer; }
-    #story-content { margin-top:10px; line-height:1.5; text-align:justify; display:none; }
-  </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Đọc Truyện - Tấm Cám</title>
+  <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-  <div class="header">Đọc Truyện</div>
+  <nav class="navbar">
+    <span class="logo">📚 Truyện Tranh</span>
+    <button id="toggle-dark">🌙</button>
+  </nav>
 
-  <!-- Thể loại -->
-  <div class="section" id="genre-section">
-    <a href="#" class="genre-btn" onclick="showGenre('co-tich')">📚 Truyện Cổ Tích</a>
-    <a href="#" class="genre-btn" onclick="alert('Thể loại chưa có nội dung mẫu')">👻 Kinh Dị</a>
-    <a href="#" class="genre-btn" onclick="alert('Thể loại chưa có nội dung mẫu')">⚔️ Kiếm Hiệp</a>
-    <a href="#" class="genre-btn" onclick="alert('Thể loại chưa có nội dung mẫu')">🎌 Anime</a>
-  </div>
+  <main>
+    <section id="genre-list">
+      <h2>Chọn thể loại</h2>
+      <div class="genre" onclick="showStoryList('co-tich')">👧 Cổ Tích</div>
+      <div class="genre" onclick="alert('Chưa có truyện')">👻 Kinh Dị</div>
+      <div class="genre" onclick="alert('Chưa có truyện')">⚔️ Kiếm Hiệp</div>
+      <div class="genre" onclick="alert('Chưa có truyện')">🎌 Anime</div>
+    </section>
 
-  <!-- Danh sách truyện cổ tích -->
-  <div class="section story-list" id="list-co-tich">
-    <div class="story-item" onclick="confirmRead('tamcam')">Tấm Cám</div>
-    <button class="back-btn" onclick="goHome()">⬅ Quay lại</button>
-  </div>
+    <section id="story-list" style="display:none;">
+      <h2>📖 Chọn truyện</h2>
+      <div class="story" onclick="showStory('tamcam')">👑 Tấm Cám</div>
+      <button onclick="goHome()">🔙 Quay lại</button>
+    </section>
 
-  <!-- Xác nhận đọc -->
-  <div class="section confirm-box" id="confirm-tamcam">
-    <p>Bạn có muốn đọc truyện <strong>Tấm Cám</strong>?</p>
-    <button class="confirm-btn" onclick="startStory('tamcam')">✅ Đọc ngay</button>
-    <button class="back-btn" onclick="backToList('co-tich')">❌ Huỷ</button>
-  </div>
+    <section id="story-reader" class="story-reader" style="display:none;">
+      <h2 id="story-title"></h2>
+      <div id="story-content" class="story-content-box"></div>
 
-  <!-- Nội dung truyện -->
-  <div class="section" id="story-section">
-    <h3 id="story-title"></h3>
-    <div id="story-content"></div>
-    <button class="nav-btn" onclick="prevPage()">⬅ Trang trước</button>
-    <button class="nav-btn" onclick="nextPage()">Trang sau ➡</button>
-    <button class="nav-btn" onclick="goHome()">🏠 Trang chủ</button>
-  </div>
+      <div class="reader-nav">
+        <button onclick="prevPage()">⬅</button>
+        <button onclick="nextPage()">➡</button>
+        <button onclick="goHome()">🏠</button>
+        <button onclick="goBackToList()">🔙</button>
+      </div>
+    </section>
+  </main>
 
-  <!-- Nội dung truyện nhúng -->
-  <script type="text/plain" id="story-tamcam">
-=== Trang 1 ===
-Ngày xửa ngày xưa, có hai chị em cùng cha khác mẹ, người chị tên là Tấm, hiền lành chăm chỉ, còn Cám thì lười biếng và hay ganh ghét.
+  <footer>
+    <p>&copy; 2025 Đọc Truyện dành cho Lumia 520</p>
+  </footer>
 
-Một hôm mẹ kế sai hai chị em đi bắt tép, ai bắt được nhiều sẽ được thưởng. Tấm chăm chỉ nên bắt được đầy giỏ, còn Cám thì rong chơi khắp nơi...
-
-=== Trang 2 ===
-Đến khi về, Cám lừa Tấm xuống tắm rồi đổ hết tép vào giỏ của mình mang về.
-
-Tấm lên bờ không còn gì, chỉ còn một con cá bống nhỏ...
-
-=== Trang 3 ===
-Bống ơi bống à, lên ăn cơm vàng cơm bạc nhà ta, chớ ăn cơm hẩm cháo hoa nhà người.
-
-Ngày qua ngày, cá bống lớn dần và trở thành người bạn duy nhất của Tấm.
-  </script>
-
-  <script>
-    var currentStory = "";
-    var currentPage = 0;
-    var pages = [];
-
-    function hideAll() {
-      var elements = document.querySelectorAll('.story-list, .confirm-box, #story-section');
-      for (var i = 0; i < elements.length; i++) elements[i].style.display = 'none';
-      document.getElementById('genre-section').style.display = 'none';
-    }
-
-    function goHome() {
-      hideAll();
-      document.getElementById('genre-section').style.display = 'block';
-    }
-
-    function showGenre(id) {
-      hideAll();
-      document.getElementById('list-' + id).style.display = 'block';
-    }
-
-    function backToList(genreId) {
-      hideAll();
-      document.getElementById('list-' + genreId).style.display = 'block';
-    }
-
-    function confirmRead(storyId) {
-      hideAll();
-      document.getElementById('confirm-' + storyId).style.display = 'block';
-    }
-
-    function startStory(storyId) {
-      hideAll();
-      var raw = document.getElementById('story-' + storyId).textContent;
-      pages = raw.split(/=== Trang \d+ ===/).map(function(p) {
-        return p.trim();
-      }).filter(function(p) { return p.length > 0; });
-      currentPage = 0;
-      currentStory = storyId;
-      document.getElementById('story-section').style.display = 'block';
-      document.getElementById('story-title').innerText = 'Tấm Cám';
-      renderPage();
-    }
-
-    function renderPage() {
-      var html = pages[currentPage].split(/\n+/).map(function(p) {
-        return '<p>' + p + '</p>';
-      }).join('');
-      document.getElementById('story-content').innerHTML = html;
-      document.getElementById('story-content').style.display = 'block';
-    }
-
-    function nextPage() {
-      if (currentPage < pages.length - 1) {
-        currentPage++;
-        renderPage();
-      }
-    }
-
-    function prevPage() {
-      if (currentPage > 0) {
-        currentPage--;
-        renderPage();
-      }
-    }
-
-    goHome();
-  </script>
+  <script src="script.js"></script>
 </body>
 </html>
