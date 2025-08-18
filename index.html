@@ -20,16 +20,15 @@
     <section id="genre-list">
       <h2>Chọn thể loại</h2>
       <div class="genre" data-genre="co-tich">👧 Cổ Tích</div>
-      <div class="genre" onclick="alert('Chưa có truyện')">👻 Kinh Dị</div>
-      <div class="genre" onclick="alert('Chưa có truyện')">⚔️ Kiếm Hiệp</div>
-      <div class="genre" onclick="alert('Chưa có truyện')">🎌 Anime</div>
+      <div class="genre" data-genre="kinh-di">👻 Kinh Dị</div>
+      <div class="genre" data-genre="kiem-hiep">⚔️ Kiếm Hiệp</div>
+      <div class="genre" data-genre="anime">🎌 Anime</div>
     </section>
 
     <section id="story-list" style="display:none;">
-      <h2>📖 Chọn truyện</h2>
+      <h2 id="story-list-title">📖 Chọn truyện</h2>
       <input type="text" id="search-box" placeholder="🔍 Tìm truyện..." />
-      <div class="story" data-id="tamcam">👑 Tấm Cám</div>
-      <div class="story" data-id="caytre">🎋 Cây Tre Trăm Đốt</div>
+      <div id="story-list-container"></div>
       <button onclick="goHome()">🔙 Quay lại</button>
     </section>
 
