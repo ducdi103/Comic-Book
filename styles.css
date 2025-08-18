@@ -7,7 +7,6 @@ body {
   transition: background 0.3s, color 0.3s;
 }
 
-/* Sửa dark mode dùng ID */
 body#dark-mode {
   background: #111;
   color: #eee;
