@@ -1,3 +1,4 @@
+/* CÁC STYLE CŨ GIỮ NGUYÊN */
 body {
   font-family: Tahoma, sans-serif;
   margin: 0;
@@ -97,4 +98,27 @@ footer {
 body#dark-mode footer {
   background: #222;
   color: #ccc;
+}
+
+
+/* ======= PHẦN CSS MỚI CHO TRANG CHỦ ======= */
+.menu-button {
+    display: block; /* Hiển thị mỗi nút trên một dòng */
+    background: #f5f5f5;
+    margin: 15px 0;
+    padding: 20px;
+    border-radius: 8px;
+    cursor: pointer;
+    border: 1px solid #ccc;
+    text-align: center;
+    font-size: 18px;
+    font-weight: bold;
+    text-decoration: none; /* Bỏ gạch chân của thẻ a */
+    color: #000;
+}
+
+body#dark-mode .menu-button {
+    background: #333;
+    color: #eee;
+    border-color: #555;
 }

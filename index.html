@@ -1,69 +1,51 @@
 <!DOCTYPE html>
 <html lang="vi">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Đọc Truyện - Cổ Tích</title>
-  <link rel="stylesheet" href="styles.css" />
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Giải Trí - Lumia 520</title>
+    <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
-  <nav class="navbar">
-    <span class="logo">📚 Truyện Tranh</span>
-    <div class="nav-btns">
-      <button id="toggle-dark">🌙</button>
-      <button id="btn-favorite">❤️</button>
-      <button id="btn-history">🕘</button>
-    </div>
-  </nav>
+    <nav class="navbar">
+        <span class="logo">🎮 Giải Trí Tổng Hợp</span>
+        <div class="nav-btns">
+            <button onclick="history.back()">⬅️ Quay Lại</button>
+            <button onclick="window.location.href='index.html'">🏠 Trang Chủ</button>
+            <button id="toggle-dark">🌙</button>
+        </div>
+    </nav>
+    <main>
+        <section id="main-menu">
+            <h2>Chọn một lĩnh vực</h2>
+            <a href="doctruyen.html" class="menu-button">📚 truyện</a>
+            <a href="#" class="menu-button" onclick="alert('Chức năng sắp ra mắt!');">🎬 Xem Phim</a>
+            <a href="#" class="menu-button" onclick="alert('Chức năng sắp ra mắt!');">🎵 Nghe Nhạc</a>
+            <a href="#" class="menu-button" onclick="alert('Chức năng sắp ra mắt!');">🕹️ Chơi Game</a>
+        </section>
+    </main>
 
-  <main>
-    <section id="genre-list">
-      <h2>Chọn thể loại</h2>
-      <div class="genre" data-genre="co-tich">👧 Cổ Tích</div>
-      <div class="genre" data-genre="kinh-di">👻 Kinh Dị</div>
-      <div class="genre" data-genre="kiem-hiep">⚔️ Kiếm Hiệp</div>
-      <div class="genre" data-genre="anime">🎌 Anime</div>
-    </section>
+    <footer>
+        <p>&copy; 2025 Giải Trí dành cho Lumia 520</p>
+    </footer>
 
-    <section id="story-list" style="display:none;">
-      <h2 id="story-list-title">📖 Chọn truyện</h2>
-      <input type="text" id="search-box" placeholder="🔍 Tìm truyện..." />
-      <div id="story-list-container"></div>
-      <button onclick="goHome()">🔙 Quay lại</button>
-    </section>
-
-    <section id="story-reader" class="story-reader" style="display:none;">
-      <h2 id="story-title"></h2>
-      <div class="reader-settings">
-        <label>Font:
-          <select id="font-select">
-            <option value="Tahoma">Tahoma</option>
-            <option value="Georgia">Georgia</option>
-            <option value="Arial">Arial</option>
-          </select>
-        </label>
-
-        <label>Cỡ chữ:
-          <select id="font-size">
-            <option value="16px">Nhỏ</option>
-            <option value="20px" selected>Vừa</option>
-            <option value="24px">Lớn</option>
-          </select>
-        </label>
-      </div>
-      <div id="story-content" class="story-content-box"></div>
-      <div class="reader-nav">
-        <button onclick="prevPage()">⬅</button>
-        <button onclick="nextPage()">➡</button>
-        <button onclick="goHome()">🏠</button>
-        <button onclick="goBackToList()">🔙</button>
-      </div>
-    </section>
-  </main>
-
-  <footer>
-    <p>&copy; 2025 Đọc Truyện dành cho Lumia 520</p>
-  </footer>
-  <script src="script.js"></script>
+    <script>
+        document.getElementById("toggle-dark").onclick = function () {
+            var body = document.body;
+            if (body.id === "dark-mode") {
+                body.id = "";
+                localStorage.setItem("theme", "light");
+            } else {
+                body.id = "dark-mode";
+                localStorage.setItem("theme", "dark");
+            }
+        };
+        window.addEventListener("load", function () {
+            var theme = localStorage.getItem("theme");
+            if (theme === "dark") {
+                document.body.id = "dark-mode";
+            }
+        });
+    </script>
 </body>
 </html>
