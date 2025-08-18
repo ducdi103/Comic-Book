@@ -3,439 +3,137 @@
 <head>
   <meta charset="utf-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
-  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
-  <title>Đọc Truyện – Bản siêu nhẹ cho Windows Phone 8.1</title>
-  <!--
-    Mục tiêu: chạy mượt trên Nokia Lumia 520 (WP 8.1, IE Mobile 11)
-    - Không dùng thư viện ngoài, không dùng ES6.
-    - Dùng localStorage để lưu sách/tiến độ.
-    - Một file HTML duy nhất để dễ triển khai.
-  -->
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Đọc Truyện - Lumia 520</title>
   <style>
-    /* ====== Reset nhẹ & biến dạng chung ====== */
-    html, body { height: 100%; margin: 0; padding: 0; }
-    body { font-family: "Segoe UI", Tahoma, Arial, sans-serif; background:#fff; color:#111; }
-    * { -ms-touch-action: manipulation; touch-action: manipulation; }
-
-    :root { /* Giá trị mặc định – IE11 không hỗ trợ var(), nên ta viết thẳng ở dưới */ }
-
-    /* ====== Thanh tiêu đề ====== */
-    .topbar {
-      position: fixed; top:0; left:0; right:0; height:48px;
-      background:#f5f5f5; border-bottom:1px solid #ddd; z-index: 5;
-      display: block;
-    }
-    .topbar-inner { padding: 8px 10px; }
-    .title { font-size: 16px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .subtitle { font-size: 12px; color:#666; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-
-    /* ====== Khu vực nội dung đọc ====== */
-    #reader {
-      position: absolute; top:48px; bottom:56px; left:0; right:0;
-      overflow-y: auto; -ms-overflow-style: -ms-autohiding-scrollbar; /* IE Mobile tối ưu */
-      padding: 14px 14px 20px 14px; max-width: 720px; margin: 0 auto;
-    }
-    #chapter-title { font-size: 18px; font-weight: 700; margin: 8px 0 10px; }
-    #chapter-content { font-size: 18px; line-height: 1.6; text-align: justify; }
-    #chapter-content p { margin: 0 0 12px; }
-
-    /* ====== Thanh điều khiển dưới ====== */
-    .bottombar {
-      position: fixed; left:0; right:0; bottom:0; height:56px;
-      background:#f5f5f5; border-top:1px solid #ddd; z-index:5;
-    }
-    .controls { height:56px; display:block; }
-    .controls .row { display:block; height:56px; }
-    .btn {
-      display:inline-block; height:40px; line-height:40px; padding:0 12px; margin:8px 5px;
-      background:#fff; border:1px solid #ccc; border-radius:8px; text-decoration:none; color:#111;
-      font-size: 14px; vertical-align: middle;
-    }
-    .btn:active { background:#e9e9e9; }
-
-    .right { float:right; }
-    .left { float:left; }
-
-    /* ====== Bảng điều khiển nhanh (menu) ====== */
-    #panel {
-      position: fixed; right:10px; top:56px; width: 92%; max-width: 560px;
-      background:#fff; border:1px solid #ccc; border-radius:10px; box-shadow: 0 2px 12px rgba(0,0,0,.15);
-      display:none; z-index: 10;
-    }
-    #panel header { padding:10px; border-bottom:1px solid #eee; font-weight:700; }
-    #panel .section { padding:10px; border-bottom:1px solid #eee; }
-    #panel .section:last-child { border-bottom:none; }
-    #panel label { display:block; font-size: 13px; margin:8px 0 4px; }
-    #panel input[type="range"] { width:100%; }
-    #panel input[type="file"] { width:100%; }
-    #toc { max-height: 200px; overflow-y: auto; border:1px solid #eee; padding:6px; }
-    #toc button { display:block; width:100%; text-align:left; margin:0 0 6px; padding:8px; font-size:14px; border:1px solid #ddd; background:#fafafa; border-radius:6px; }
-
-    /* ====== Giao diện tối ====== */
-    .dark body, body.dark { background:#111; color:#f0f0f0; }
-    body.dark .topbar, body.dark .bottombar, body.dark #panel { background:#1a1a1a; border-color:#333; }
-    body.dark .btn { background:#222; border-color:#333; color:#f0f0f0; }
-    body.dark #toc button { background:#222; border-color:#333; color:#f0f0f0; }
-
-    /* ====== Ẩn khi cần ====== */
-    .hidden { display:none; }
-    .clearfix:after { content:""; display:block; clear:both; }
+    body { font-family: Tahoma, sans-serif; margin:0; padding:0; background:#fff; color:#000; }
+    .header { background:#eee; padding:10px; text-align:center; font-weight:bold; border-bottom:1px solid #ccc; }
+    .section { padding:10px; }
+    .genre-btn { display:block; padding:10px; background:#f5f5f5; border:1px solid #ccc; margin-bottom:6px; text-decoration:none; color:#000; border-radius:6px; }
+    .story-list, .confirm-box { display:none; margin-top:10px; }
+    .story-item { padding:8px; border:1px solid #ddd; border-radius:4px; margin-bottom:6px; background:#fafafa; cursor:pointer; }
+    .nav-btn, .back-btn, .confirm-btn { display:inline-block; margin-top:10px; padding:6px 10px; background:#ddd; border:none; border-radius:4px; cursor:pointer; }
+    #story-content { margin-top:10px; line-height:1.5; text-align:justify; display:none; }
   </style>
 </head>
 <body>
-  <!-- Thanh trên -->
-  <div class="topbar">
-    <div class="topbar-inner">
-      <div class="title" id="app-title">Đọc Truyện</div>
-      <div class="subtitle" id="book-title">—</div>
-    </div>
+  <div class="header">Đọc Truyện</div>
+
+  <!-- Thể loại -->
+  <div class="section" id="genre-section">
+    <a href="#" class="genre-btn" onclick="showGenre('co-tich')">📚 Truyện Cổ Tích</a>
+    <a href="#" class="genre-btn" onclick="alert('Thể loại chưa có nội dung mẫu')">👻 Kinh Dị</a>
+    <a href="#" class="genre-btn" onclick="alert('Thể loại chưa có nội dung mẫu')">⚔️ Kiếm Hiệp</a>
+    <a href="#" class="genre-btn" onclick="alert('Thể loại chưa có nội dung mẫu')">🎌 Anime</a>
   </div>
 
-  <!-- Khu vực đọc -->
-  <main id="reader" tabindex="0">
-    <div id="chapter-title"></div>
-    <div id="chapter-content"></div>
-  </main>
-
-  <!-- Thanh dưới -->
-  <div class="bottombar">
-    <div class="controls clearfix">
-      <a href="#" class="btn left" id="btn-menu">☰ Menu</a>
-      <a href="#" class="btn left" id="btn-smaller">A−</a>
-      <a href="#" class="btn left" id="btn-bigger">A+</a>
-
-      <a href="#" class="btn right" id="btn-next">Chương ▶</a>
-      <a href="#" class="btn right" id="btn-prev">◀ Chương</a>
-    </div>
+  <!-- Danh sách truyện cổ tích -->
+  <div class="section story-list" id="list-co-tich">
+    <div class="story-item" onclick="confirmRead('tamcam')">Tấm Cám</div>
+    <button class="back-btn" onclick="goHome()">⬅ Quay lại</button>
   </div>
 
-  <!-- Panel cài đặt / thư viện / mục lục -->
-  <div id="panel">
-    <header>Cài đặt & Thư viện</header>
-
-    <div class="section">
-      <strong>Chế độ hiển thị</strong>
-      <div>
-        <label><input type="checkbox" id="toggle-dark"> Bật chế độ tối</label>
-      </div>
-      <div>
-        <label for="lineHeight">Dãn dòng (1.3–2.0)</label>
-        <input id="lineHeight" type="range" min="1.3" max="2.0" step="0.1" value="1.6">
-      </div>
-    </div>
-
-    <div class="section">
-      <strong>Thư viện (chọn truyện)</strong>
-      <div id="library"></div>
-      <div style="margin-top:8px;">
-        <a href="#" class="btn" id="btn-export">Sao lưu</a>
-        <a href="#" class="btn" id="btn-clear">Xóa tất cả</a>
-      </div>
-    </div>
-
-    <div class="section">
-      <strong>Mục lục chương</strong>
-      <div id="toc"></div>
-    </div>
-
-    <div class="section">
-      <strong>Nhập truyện (.txt hoặc .json)</strong>
-      <label style="font-size:12px;color:#666;">.txt: dùng dòng chứa === Tên chương === để tách chương</label>
-      <input type="file" id="file-input" accept=".txt,.json">
-    </div>
+  <!-- Xác nhận đọc -->
+  <div class="section confirm-box" id="confirm-tamcam">
+    <p>Bạn có muốn đọc truyện <strong>Tấm Cám</strong>?</p>
+    <button class="confirm-btn" onclick="startStory('tamcam')">✅ Đọc ngay</button>
+    <button class="back-btn" onclick="backToList('co-tich')">❌ Huỷ</button>
   </div>
+
+  <!-- Nội dung truyện -->
+  <div class="section" id="story-section">
+    <h3 id="story-title"></h3>
+    <div id="story-content"></div>
+    <button class="nav-btn" onclick="prevPage()">⬅ Trang trước</button>
+    <button class="nav-btn" onclick="nextPage()">Trang sau ➡</button>
+    <button class="nav-btn" onclick="goHome()">🏠 Trang chủ</button>
+  </div>
+
+  <!-- Nội dung truyện nhúng -->
+  <script type="text/plain" id="story-tamcam">
+=== Trang 1 ===
+Ngày xửa ngày xưa, có hai chị em cùng cha khác mẹ, người chị tên là Tấm, hiền lành chăm chỉ, còn Cám thì lười biếng và hay ganh ghét.
+
+Một hôm mẹ kế sai hai chị em đi bắt tép, ai bắt được nhiều sẽ được thưởng. Tấm chăm chỉ nên bắt được đầy giỏ, còn Cám thì rong chơi khắp nơi...
+
+=== Trang 2 ===
+Đến khi về, Cám lừa Tấm xuống tắm rồi đổ hết tép vào giỏ của mình mang về.
+
+Tấm lên bờ không còn gì, chỉ còn một con cá bống nhỏ...
+
+=== Trang 3 ===
+Bống ơi bống à, lên ăn cơm vàng cơm bạc nhà ta, chớ ăn cơm hẩm cháo hoa nhà người.
+
+Ngày qua ngày, cá bống lớn dần và trở thành người bạn duy nhất của Tấm.
+  </script>
 
   <script>
-    // ====== DỮ LIỆU MẪU: 1 truyện ngắn với 3 chương ======
-    var SAMPLE_BOOK = {
-      id: "demo-001",
-      title: "Truyện demo: Người giữ gió",
-      chapters: [
-        { title: "Chương 1: Cơn gió đầu mùa", content: [
-          "Buổi chiều, phố nhỏ lặng gió. Tôi ngồi dưới hiên nhà, nghe tiếng xe thưa thớt trôi qua như những con thuyền xa.",
-          "Bà chủ quán tạp hóa đối diện đang đếm kẹo, thỉnh thoảng ngước lên nhìn trời. Bầu trời như tờ giấy mờ, chờ ai đó ký tên bằng một cơn mưa.",
-          "Đến khi chiếc lá bàng rung nhẹ, tôi biết người giữ gió đã quay về."
-        ] },
-        { title: "Chương 2: Lời hứa trong hộc bàn", content: [
-          "Ngày ấy, chúng tôi giấu một lời hứa trong hộc bàn gỗ cũ. Mỗi mùa, tôi lại mở ra, thấy những vệt phấn lấm tấm như mưa bụi.",
-          "Người giữ gió nói: hứa với gió thì phải nhẹ tay, vì gió dễ vỡ. Tôi cười, không biết gió cũng có hình."
-        ] },
-        { title: "Chương 3: Trả gió về trời", content: [
-          "Khi thành phố bỗng đông hơn, tôi đánh rơi vài câu chuyện trên vỉa hè. Gió đi ngang, nhặt lên, trả lại cho tôi vào một đêm mất điện.",
-          "Tôi mở hộc bàn, thấy tờ giấy trắng. Lời hứa đã tan vào gió, chỉ còn mùi phấn thơm như tuổi mười lăm."
-        ] }
-      ]
-    };
+    var currentStory = "";
+    var currentPage = 0;
+    var pages = [];
 
-    // ====== Trạng thái ứng dụng ======
-    var state = {
-      library: {},          // id -> book
-      currentBookId: null,
-      currentChapter: 0,
-      fontSize: 18,
-      lineHeight: 1.6,
-      dark: false
-    };
-
-    // ====== Helpers lưu trữ ======
-    function saveState() {
-      try { localStorage.setItem('wp_reader_state', JSON.stringify(state)); } catch (e) {}
-    }
-    function loadState() {
-      var raw = null; try { raw = localStorage.getItem('wp_reader_state'); } catch (e) {}
-      if (raw) {
-        try { state = JSON.parse(raw); } catch (e) {}
-      }
-      if (!state || typeof state !== 'object') { state = {}; }
-      // Gán giá trị mặc định nếu thiếu
-      if (!state.library) state.library = {};
-      if (typeof state.currentChapter !== 'number') state.currentChapter = 0;
-      if (typeof state.fontSize !== 'number') state.fontSize = 18;
-      if (typeof state.lineHeight !== 'number') state.lineHeight = 1.6;
-      if (typeof state.dark !== 'boolean') state.dark = false;
+    function hideAll() {
+      var elements = document.querySelectorAll('.story-list, .confirm-box, #story-section');
+      for (var i = 0; i < elements.length; i++) elements[i].style.display = 'none';
+      document.getElementById('genre-section').style.display = 'none';
     }
 
-    function saveLibrary() {
-      try { localStorage.setItem('wp_reader_library', JSON.stringify(state.library)); } catch (e) {}
+    function goHome() {
+      hideAll();
+      document.getElementById('genre-section').style.display = 'block';
     }
-    function loadLibrary() {
-      var raw = null; try { raw = localStorage.getItem('wp_reader_library'); } catch (e) {}
-      if (raw) {
-        try { state.library = JSON.parse(raw) || {}; } catch (e) { state.library = {}; }
-      }
-      if (!state.library || typeof state.library !== 'object') state.library = {};
-      // Nếu thư viện trống, thêm sách mẫu
-      var isEmpty = true; for (var k in state.library) { isEmpty = false; break; }
-      if (isEmpty) {
-        state.library[SAMPLE_BOOK.id] = SAMPLE_BOOK;
-        state.currentBookId = SAMPLE_BOOK.id;
-        state.currentChapter = 0;
+
+    function showGenre(id) {
+      hideAll();
+      document.getElementById('list-' + id).style.display = 'block';
+    }
+
+    function backToList(genreId) {
+      hideAll();
+      document.getElementById('list-' + genreId).style.display = 'block';
+    }
+
+    function confirmRead(storyId) {
+      hideAll();
+      document.getElementById('confirm-' + storyId).style.display = 'block';
+    }
+
+    function startStory(storyId) {
+      hideAll();
+      var raw = document.getElementById('story-' + storyId).textContent;
+      pages = raw.split(/=== Trang \d+ ===/).map(function(p) {
+        return p.trim();
+      }).filter(function(p) { return p.length > 0; });
+      currentPage = 0;
+      currentStory = storyId;
+      document.getElementById('story-section').style.display = 'block';
+      document.getElementById('story-title').innerText = 'Tấm Cám';
+      renderPage();
+    }
+
+    function renderPage() {
+      var html = pages[currentPage].split(/\n+/).map(function(p) {
+        return '<p>' + p + '</p>';
+      }).join('');
+      document.getElementById('story-content').innerHTML = html;
+      document.getElementById('story-content').style.display = 'block';
+    }
+
+    function nextPage() {
+      if (currentPage < pages.length - 1) {
+        currentPage++;
+        renderPage();
       }
     }
 
-    // ====== DOM tiện ích ======
-    function $(id) { return document.getElementById(id); }
-
-    function setDarkMode(enabled) {
-      state.dark = !!enabled; saveState();
-      if (state.dark) document.body.className = (document.body.className||'') + ' dark';
-      else document.body.className = document.body.className.replace(/\bdark\b/g, '');
-    }
-
-    function applyTypography() {
-      var content = $('chapter-content');
-      content.style.fontSize = state.fontSize + 'px';
-      content.style.lineHeight = state.lineHeight;
-    }
-
-    function renderBookList() {
-      var container = $('library');
-      var html = '';
-      for (var id in state.library) {
-        var book = state.library[id];
-        html += '<button data-id="' + encodeURIComponent(id) + '">' + escapeHtml(book.title) + '</button>';
-      }
-      container.innerHTML = html;
-      container.onclick = function(e){
-        var t = e.target || e.srcElement; if (t && t.tagName === 'BUTTON') {
-          var id = decodeURIComponent(t.getAttribute('data-id'));
-          if (state.library[id]) {
-            state.currentBookId = id; state.currentChapter = 0; saveState();
-            closePanel(); renderTOC(); renderChapter();
-          }
-        }
-      };
-    }
-
-    function renderTOC() {
-      var book = getCurrentBook(); if (!book) return;
-      $('book-title').innerHTML = book.title;
-      var toc = $('toc');
-      var html = '';
-      for (var i=0; i<book.chapters.length; i++) {
-        var ch = book.chapters[i];
-        html += '<button data-idx="'+i+'">'+ escapeHtml((i+1)+'. '+ch.title) +'</button>';
-      }
-      toc.innerHTML = html;
-      toc.onclick = function(e){
-        var t = e.target || e.srcElement; if (t && t.tagName === 'BUTTON') {
-          var idx = parseInt(t.getAttribute('data-idx'), 10);
-          state.currentChapter = idx; saveState();
-          closePanel(); renderChapter();
-        }
-      };
-    }
-
-    function renderChapter() {
-      var book = getCurrentBook(); if (!book) return;
-      var idx = state.currentChapter;
-      if (idx < 0) idx = 0; if (idx >= book.chapters.length) idx = book.chapters.length - 1;
-      state.currentChapter = idx; saveState();
-
-      var ch = book.chapters[idx];
-      $('chapter-title').innerHTML = escapeHtml(ch.title);
-
-      var html = '';
-      if (ch.content && ch.content.length) {
-        for (var i=0; i<ch.content.length; i++) {
-          html += '<p>' + escapeHtml(ch.content[i]) + '</p>';
-        }
-      } else if (typeof ch.content === 'string') {
-        html = '<p>' + escapeHtml(ch.content) + '</p>';
-      } else {
-        html = '<p><em>(Chương này đang trống)</em></p>';
-      }
-      $('chapter-content').innerHTML = html;
-
-      // Đưa đọc lên đầu
-      $('reader').scrollTop = 0;
-      applyTypography();
-      $('app-title').innerHTML = 'Đọc Truyện • ' + escapeHtml(book.title);
-    }
-
-    function getCurrentBook() {
-      if (!state.currentBookId) {
-        // Chọn ngẫu nhiên 1 sách nếu chưa có
-        for (var id in state.library) { state.currentBookId = id; break; }
-      }
-      return state.library[state.currentBookId];
-    }
-
-    function nextChapter() { var b = getCurrentBook(); if (!b) return; if (state.currentChapter < b.chapters.length-1) { state.currentChapter++; saveState(); renderChapter(); } }
-    function prevChapter() { if (state.currentChapter > 0) { state.currentChapter--; saveState(); renderChapter(); } }
-
-    function openPanel() { var p = $('panel'); p.style.display = 'block'; renderBookList(); renderTOC(); $('toggle-dark').checked = state.dark; $('lineHeight').value = state.lineHeight; }
-    function closePanel() { $('panel').style.display = 'none'; }
-
-    function escapeHtml(s) {
-      if (s == null) return '';
-      return String(s)
-        .replace(/&/g, '&amp;')
-        .replace(/</g, '&lt;')
-        .replace(/>/g, '&gt;')
-        .replace(/\"/g, '&quot;')
-        .replace(/'/g, '&#39;');
-    }
-
-    // ====== Nhập sách từ file ======
-    function importFromText(name, text) {
-      // Quy ước tách chương: dòng đơn chứa === Tên chương ===
-      var lines = text.replace(/\r\n/g, '\n').split('\n');
-      var chapters = [];
-      var curTitle = 'Mở đầu';
-      var curParas = [];
-      function pushChapter() {
-        if (curParas.length > 0 || chapters.length === 0) {
-          chapters.push({ title: curTitle, content: curParas.slice(0) });
-        }
-        curParas = [];
-      }
-      for (var i=0; i<lines.length; i++) {
-        var line = lines[i];
-        var m = /^\s*===\s*(.+?)\s*===\s*$/.exec(line);
-        if (m) {
-          // Gặp tiêu đề chương mới
-          if (curParas.length > 0) pushChapter();
-          curTitle = m[1];
-        } else if (/^\s*$/.test(line)) {
-          // dòng trống tách đoạn
-          if (curParas.length && curParas[curParas.length-1] !== '') curParas.push('');
-        } else {
-          curParas.push(line);
-        }
-      }
-      pushChapter();
-      var id = 'book-' + new Date().getTime();
-      var book = { id: id, title: name || ('Truyện mới '+id), chapters: chapters };
-      state.library[id] = book;
-      state.currentBookId = id; state.currentChapter = 0; saveLibrary(); saveState();
-      alert('Đã nhập truyện: ' + book.title + ' (Chương: ' + chapters.length + ')');
-      renderBookList(); renderTOC(); renderChapter();
-    }
-
-    function importFromJson(obj) {
-      if (!obj || !obj.title || !obj.chapters) { alert('File JSON không đúng định dạng.'); return; }
-      if (!obj.id) obj.id = 'book-' + new Date().getTime();
-      state.library[obj.id] = obj; state.currentBookId = obj.id; state.currentChapter = 0;
-      saveLibrary(); saveState(); renderBookList(); renderTOC(); renderChapter();
-      alert('Đã nhập truyện: ' + obj.title);
-    }
-
-    function handleFileInput(file) {
-      var reader = new FileReader();
-      reader.onload = function(evt){
-        var content = evt.target.result;
-        var name = file && file.name ? file.name.replace(/\.(txt|json)$/i,'') : 'Truyện mới';
-        if (/\.json$/i.test(file.name)) {
-          try { var obj = JSON.parse(content); importFromJson(obj); }
-          catch (e) { alert('Không đọc được JSON: ' + e.message); }
-        } else {
-          importFromText(name, content);
-        }
-      };
-      reader.onerror = function(){ alert('Không thể đọc file.'); };
-      reader.readAsText(file, 'utf-8');
-    }
-
-    // ====== Sao lưu / xuất dữ liệu ======
-    function exportLibrary() {
-      var data = JSON.stringify(state.library);
-      try {
-        // IE (bao gồm IE Mobile) có msSaveBlob
-        if (window.Blob && navigator.msSaveBlob) {
-          var blob = new Blob([data], {type: 'application/json'});
-          navigator.msSaveBlob(blob, 'thu_vien_truyen.json');
-        } else {
-          var a = document.createElement('a');
-          a.setAttribute('download', 'thu_vien_truyen.json');
-          a.setAttribute('href', 'data:application/json;charset=utf-8,' + encodeURIComponent(data));
-          a.style.display = 'none'; document.body.appendChild(a); a.click(); document.body.removeChild(a);
-        }
-      } catch (e) {
-        alert('Không thể xuất dữ liệu: ' + e.message);
+    function prevPage() {
+      if (currentPage > 0) {
+        currentPage--;
+        renderPage();
       }
     }
 
-    // ====== Khởi tạo ======
-    function init() {
-      loadState(); loadLibrary();
-      // Áp theme + typography
-      setDarkMode(state.dark); applyTypography();
-
-      // Render lần đầu
-      renderBookList(); renderTOC(); renderChapter();
-
-      // Sự kiện UI
-      $('btn-next').onclick = function(e){ e.preventDefault(); nextChapter(); };
-      $('btn-prev').onclick = function(e){ e.preventDefault(); prevChapter(); };
-      $('btn-bigger').onclick = function(e){ e.preventDefault(); if (state.fontSize < 28) { state.fontSize += 1; saveState(); applyTypography(); } };
-      $('btn-smaller').onclick = function(e){ e.preventDefault(); if (state.fontSize > 12) { state.fontSize -= 1; saveState(); applyTypography(); } };
-      $('btn-menu').onclick = function(e){ e.preventDefault(); var p = $('panel'); if (p.style.display === 'block') closePanel(); else openPanel(); };
-
-      $('toggle-dark').onchange = function(){ setDarkMode(this.checked); };
-      $('lineHeight').onchange = function(){ var v = parseFloat(this.value); if (!isNaN(v)) { state.lineHeight = v; saveState(); applyTypography(); } };
-
-      $('file-input').onchange = function(){ var f = this.files && this.files[0]; if (f) handleFileInput(f); this.value = ''; };
-      $('btn-export').onclick = function(e){ e.preventDefault(); exportLibrary(); };
-      $('btn-clear').onclick = function(e){ e.preventDefault(); if (confirm('Xóa toàn bộ thư viện? (không thể hoàn tác)')) { state.library = {}; saveLibrary(); loadLibrary(); renderBookList(); renderTOC(); renderChapter(); } };
-
-      // Đóng panel khi chạm ra ngoài
-      document.addEventListener('click', function(ev){
-        var p = $('panel'); var t = ev.target || ev.srcElement;
-        if (p.style.display === 'block') {
-          // Nếu click ngoài panel và không phải nút menu
-          if (t.id !== 'panel' && !isDescendant(p, t) && t.id !== 'btn-menu') { closePanel(); }
-        }
-      }, false);
-    }
-
-    function isDescendant(parent, child) {
-      var node = child; while (node) { if (node === parent) return true; node = node.parentNode; } return false;
-    }
-
-    // Khởi động
-    if (document.readyState === 'complete' || document.readyState === 'interactive') { setTimeout(init, 0); }
-    else document.addEventListener('DOMContentLoaded', init, false);
+    goHome();
   </script>
 </body>
 </html>
