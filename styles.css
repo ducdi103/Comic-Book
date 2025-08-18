@@ -7,7 +7,8 @@ body {
   transition: background 0.3s, color 0.3s;
 }
 
-body.dark {
+/* Sửa dark mode dùng ID */
+body#dark-mode {
   background: #111;
   color: #eee;
 }
@@ -22,7 +23,11 @@ body.dark {
   border-bottom: 1px solid #ccc;
 }
 
-body.dark .navbar {
+.nav-btns button {
+  margin-left: 6px;
+}
+
+body#dark-mode .navbar {
   background: #222;
   color: #fff;
 }
@@ -40,7 +45,8 @@ main {
   border: 1px solid #ccc;
 }
 
-body.dark .genre, body.dark .story {
+body#dark-mode .genre,
+body#dark-mode .story {
   background: #333;
   color: #eee;
 }
@@ -58,7 +64,7 @@ body.dark .genre, body.dark .story {
   min-height: 200px;
 }
 
-body.dark .story-content-box {
+body#dark-mode .story-content-box {
   background: #222;
   border-color: #444;
 }
@@ -72,9 +78,13 @@ body.dark .story-content-box {
   cursor: pointer;
 }
 
-body.dark .reader-nav button {
+body#dark-mode .reader-nav button {
   background: #444;
   color: #fff;
+}
+
+.reader-settings {
+  margin-bottom: 10px;
 }
 
 footer {
@@ -85,7 +95,7 @@ footer {
   border-top: 1px solid #ccc;
 }
 
-body.dark footer {
+body#dark-mode footer {
   background: #222;
   color: #ccc;
 }

@@ -1,21 +1,25 @@
 <!DOCTYPE html>
 <html lang="vi">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Đọc Truyện - Tấm Cám</title>
-  <link rel="stylesheet" href="styles.css">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Đọc Truyện - Cổ Tích</title>
+  <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
   <nav class="navbar">
     <span class="logo">📚 Truyện Tranh</span>
-    <button id="toggle-dark">🌙</button>
+    <div class="nav-btns">
+      <button id="toggle-dark">🌙</button>
+      <button id="btn-favorite">❤️</button>
+      <button id="btn-history">🕘</button>
+    </div>
   </nav>
 
   <main>
     <section id="genre-list">
       <h2>Chọn thể loại</h2>
-      <div class="genre" onclick="showStoryList('co-tich')">👧 Cổ Tích</div>
+      <div class="genre" data-genre="co-tich">👧 Cổ Tích</div>
       <div class="genre" onclick="alert('Chưa có truyện')">👻 Kinh Dị</div>
       <div class="genre" onclick="alert('Chưa có truyện')">⚔️ Kiếm Hiệp</div>
       <div class="genre" onclick="alert('Chưa có truyện')">🎌 Anime</div>
@@ -23,14 +27,32 @@
 
     <section id="story-list" style="display:none;">
       <h2>📖 Chọn truyện</h2>
-      <div class="story" onclick="showStory('tamcam')">👑 Tấm Cám</div>
+      <input type="text" id="search-box" placeholder="🔍 Tìm truyện..." />
+      <div class="story" data-id="tamcam">👑 Tấm Cám</div>
+      <div class="story" data-id="caytre">🎋 Cây Tre Trăm Đốt</div>
       <button onclick="goHome()">🔙 Quay lại</button>
     </section>
 
     <section id="story-reader" class="story-reader" style="display:none;">
       <h2 id="story-title"></h2>
-      <div id="story-content" class="story-content-box"></div>
+      <div class="reader-settings">
+        <label>Font:
+          <select id="font-select">
+            <option value="Tahoma">Tahoma</option>
+            <option value="Georgia">Georgia</option>
+            <option value="Arial">Arial</option>
+          </select>
+        </label>
 
+        <label>Cỡ chữ:
+          <select id="font-size">
+            <option value="16px">Nhỏ</option>
+            <option value="20px" selected>Vừa</option>
+            <option value="24px">Lớn</option>
+          </select>
+        </label>
+      </div>
+      <div id="story-content" class="story-content-box"></div>
       <div class="reader-nav">
         <button onclick="prevPage()">⬅</button>
         <button onclick="nextPage()">➡</button>
@@ -43,7 +65,6 @@
   <footer>
     <p>&copy; 2025 Đọc Truyện dành cho Lumia 520</p>
   </footer>
-
   <script src="script.js"></script>
 </body>
 </html>
