@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <title>Xem Phim</title>
+  <meta http-equiv="X-UA-Compatible" content="IE=Edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body id="">
+  <div class="navbar">
+    <h1>🎬 Xem Phim</h1>
+    <div class="btn-row">
+      <button id="toggle-dark">🌙 Dark</button>
+      <a class="btn" href="index.html">🏠 Trang chủ</a>
+    </div>
+  </div>
+
+  <div class="wrap">
+    <!-- THỂ LOẠI -->
+    <div id="genre-list">
+      <div class="item" onclick="showMovies('hanh-dong')">🔥 Hành động</div>
+      <div class="item" onclick="showMovies('hoat-hinh')">🎨 Hoạt hình</div>
+    </div>
+
+    <!-- DANH SÁCH PHIM -->
+    <div id="movie-list" style="display:none;"></div>
+
+    <!-- PLAYER -->
+    <div id="movie-player" style="display:none;">
+      <div class="card">
+        <h2 id="movie-title">Tiêu đề</h2>
+        <video id="video" class="video" controls preload="metadata">
+          <source id="videoSource" src="" type="video/mp4">
+          Trình duyệt không hỗ trợ video.
+        </video>
+
+        <div class="toolbar">
+          <button onclick="backToList()">🔙 Quay lại</button>
+          <button onclick="changeVideoSource()">⚙️ Nguồn video</button>
+          <button onclick="reloadVideo()">🔁 Tải lại</button>
+        </div>
+        <p id="movie-desc"></p>
+      </div>
+    </div>
+  </div>
+
+  <div class="footer">© 2025</div>
+
+  <script src="script.js"></script>
+  <script>
+    // ====== DỮ LIỆU PHIM MẪU (có thể đổi) ======
+   var MOVIES = {
+  "hanh-dong": {
+    "cat-chips": {
+      id: "hanh-dong/cat-chips",
+      title: "Cat Eating Chips (4K)",
+      // Giữ nguyên tên file -> dùng bản mã hóa khoảng trắng:
+      file: "phim/hanh-dong/Cat%20Eating%20Chips%20Through%20Windows%2011%20Live%20Wallpaper%204K.mp4",
+      // Nếu bạn đã đổi tên file gọn, thay dòng trên bằng:
+      // file: "phim/hanh-dong/cat-eating-chips-4k.mp4",
+      desc: "Demo video trong thư mục hanh-dong."
+    }
+  },
+  "hoat-hinh": { }
+};
+
+    var OV_KEY = "videoSrcOverrides";
+    var videoOverrides = readJSON(OV_KEY, {});
+    var currentMovie = null;
+
+    function mimeFromExt(src) {
+      var ext = "";
+      var parts = (src || "").split(".");
+      if (parts.length > 1) ext = parts[parts.length - 1].toLowerCase();
+      if (ext === "webm") return "video/webm";
+      if (ext === "ogg" || ext === "ogv") return "video/ogg";
+      return "video/mp4";
+    }
+
+    function resolveSource(movie) {
+      return videoOverrides[movie.id] || movie.file;
+    }
+
+    function showMovies(genre) {
+      var list = $("movie-list");
+      list.innerHTML = "";
+      var obj = MOVIES[genre] || {};
+      for (var key in obj) {
+        if (!obj.hasOwnProperty(key)) continue;
+        var m = obj[key];
+        var div = document.createElement("div");
+        div.className = "item";
+        div.innerHTML = m.title;
+        div.onclick = (function (g, k) {
+          return function () { showMovie(g, k); };
+        })(genre, key);
+        list.appendChild(div);
+      }
+      $("genre-list").style.display = "none";
+      list.style.display = "block";
+      $("movie-player").style.display = "none";
+      window.scrollTo(0,0);
+    }
+
+    function showMovie(genre, key) {
+      var movie = MOVIES[genre][key];
+      currentMovie = movie;
+
+      var src = resolveSource(movie);
+      var sourceEl = $("videoSource");
+      sourceEl.src = src;
+      sourceEl.type = mimeFromExt(src);
+      var v = $("video");
+      v.load();
+
+      $("movie-title").innerHTML = movie.title;
+      $("movie-desc").innerHTML = movie.desc || "";
+
+      $("movie-list").style.display = "none";
+      $("movie-player").style.display = "block";
+      window.scrollTo(0,0);
+    }
+
+    function backToList() {
+      $("movie-player").style.display = "none";
+      $("movie-list").style.display = "block";
+      window.scrollTo(0,0);
+    }
+
+    function reloadVideo() {
+      var v = $("video");
+      v.load();
+      try { v.play(); } catch (e) {}
+    }
+
+    function changeVideoSource() {
+      if (!currentMovie) return;
+      var cur = resolveSource(currentMovie);
+      var input = window.prompt("Nhập đường dẫn video (ví dụ: movies/tenphim.mp4):", cur || "");
+      if (!input) return;
+
+      videoOverrides[currentMovie.id] = String(input).replace(/^\s+|\s+$/g, "");
+      writeJSON(OV_KEY, videoOverrides);
+
+      var sourceEl = $("videoSource");
+      sourceEl.src = videoOverrides[currentMovie.id];
+      sourceEl.type = mimeFromExt(videoOverrides[currentMovie.id]);
+      var v = $("video");
+      v.load();
+      try { v.play(); } catch (e) {}
+      window.alert("Đã cập nhật nguồn cho: " + (currentMovie.title || "phim"));
+    }
+
+    (function () {
+      // init theme button + theme state
+      window.__initTheme && window.__initTheme();
+    })();
+  </script>
+</body>
+</html>

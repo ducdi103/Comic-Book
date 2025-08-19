@@ -1,71 +1,146 @@
 <!DOCTYPE html>
 <html lang="vi">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Đọc Truyện - Cổ Tích</title>
-  <link rel="stylesheet" href="styles.css" />
+  <meta charset="UTF-8">
+  <title>Đọc Truyện</title>
+  <meta http-equiv="X-UA-Compatible" content="IE=Edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+  <link rel="stylesheet" href="styles.css">
 </head>
-<body>
-  <nav class="navbar">
-    <span class="logo">📚 Truyện Tranh</span>
-    <div class="nav-btns">
-      <button onclick="history.back()">⬅️ Quay Lại</button>
-      <button onclick="window.location.href='index.html'">🏠 Trang Chủ</button>
-      
-      <button id="toggle-dark">🌙</button>
-      <button id="btn-favorite">❤️</button>
-      <button id="btn-history">🕘</button>
+<body id="">
+  <div class="navbar">
+    <h1>📖 Đọc Truyện</h1>
+    <div class="btn-row">
+      <button id="toggle-dark">🌙 Dark</button>
+      <a class="btn" href="index.html">🏠 Trang chủ</a>
     </div>
-  </nav>
-  <main>
-    <section id="genre-list">
-      <h2>Chọn thể loại</h2>
-      <div class="genre" data-genre="co-tich">👧 Cổ Tích</div>
-      <div class="genre" data-genre="kinh-di">👻 Kinh Dị</div>
-      <div class="genre" data-genre="kiem-hiep">⚔️ Kiếm Hiệp</div>
-      <div class="genre" data-genre="anime">🎌 Anime</div>
-    </section>
+  </div>
 
-    <section id="story-list" style="display:none;">
-      <h2 id="story-list-title">📖 Chọn truyện</h2>
-      <input type="text" id="search-box" placeholder="🔍 Tìm truyện..." />
-      <div id="story-list-container"></div>
-      <button onclick="goHome()">🔙 Quay lại trang chủ</button>
-    </section>
+  <div class="wrap">
+    <!-- THỂ LOẠI -->
+    <div id="story-genre">
+      <div class="item" onclick="loadStories('co-tich')">🌟 Cổ tích</div>
+      <div class="item" onclick="loadStories('thieu-nhi')">🎈 Thiếu nhi</div>
+    </div>
 
-    <section id="story-reader" class="story-reader" style="display:none;">
-      <h2 id="story-title"></h2>
-      <div class="reader-settings">
-        <label>Font:
-          <select id="font-select">
-            <option value="Tahoma">Tahoma</option>
-            <option value="Georgia">Georgia</option>
-            <option value="Arial">Arial</option>
-          </select>
-        </label>
+    <!-- DANH SÁCH TRUYỆN -->
+    <div id="story-list" style="display:none;"></div>
 
-        <label>Cỡ chữ:
-          <select id="font-size">
-            <option value="16px">Nhỏ</option>
-            <option value="20px" selected>Vừa</option>
-            <option value="24px">Lớn</option>
-          </select>
-        </label>
+    <!-- ĐỌC TRUYỆN -->
+    <div id="reader" style="display:none;">
+      <div class="card">
+        <h2 id="story-title"></h2>
+        <div id="story-content" style="min-height:160px; line-height:1.6;"></div>
+        <div class="toolbar">
+          <button onclick="prevPage()">⬅️ Trang trước</button>
+          <span id="page-info"></span>
+          <button onclick="nextPage()">➡️ Trang sau</button>
+        </div>
+        <div class="toolbar">
+          <button onclick="backToStoryList()">🔙 Quay lại</button>
+        </div>
       </div>
-      <div id="story-content" class="story-content-box"></div>
-      <div class="reader-nav">
-        <button onclick="prevPage()">⬅</button>
-        <button onclick="nextPage()">➡</button>
-        <button onclick="goHome()">🏠</button>
-        <button onclick="goBackToList()">🔙</button>
-      </div>
-    </section>
-  </main>
+    </div>
+  </div>
 
-  <footer>
-    <p>&copy; 2025 Đọc Truyện dành cho Lumia 520</p>
-  </footer>
+  <div class="footer">© 2025</div>
+
   <script src="script.js"></script>
+  <script>
+    // ====== DATA MẪU: Tấm Cám (chia ~100 từ/trang) ======
+    var STORIES = {
+      "co-tich": {
+        "tam-cam": {
+          id: "co-tich/tam-cam",
+          title: "Tấm Cám",
+          pages: [
+            "Ngày xưa có hai chị em Tấm và Cám, mồ côi mẹ từ nhỏ. Cha lấy vợ kế, dì ghẻ ghét Tấm, thương Cám. Một hôm, dì ghẻ đưa cho hai chị em cái giỏ, bảo ra đồng xúc tép, ai được nhiều sẽ thưởng. Tấm chăm chỉ, chịu khó, xúc đầy giỏ toàn tép ngon...",
+            "Cám thì ham chơi, chỉ rong ruổi nghịch ngợm. Khi thấy giỏ Tấm đầy, Cám lừa: 'Chị Tấm ơi, đầu chị có con gì kìa', Tấm ngây thơ ngẩng đầu, Cám đổ hết tép của Tấm vào giỏ mình. Tấm khóc. Bụt hiện lên hỏi chuyện, rồi bảo Tấm về nhà thả con cá bống vào giếng mà nuôi...",
+            "Tấm ngày ngày cho bống ăn, gọi bống lên bằng câu: 'Bống bống bang bang, lên ăn cơm vàng cơm bạc nhà ta...' Dì ghẻ biết chuyện, lừa bắt bống làm thịt. Tấm đau lòng, Bụt lại hiện, dặn Tấm nhặt xương bống bỏ vào lọ chôn dưới chân giường. Đến ngày hội, Bụt cho Tấm quần áo đẹp và giày thêu...",
+            "Tấm đi hội bị mẹ con Cám hãm hại, đánh rơi một chiếc giày. Nhà vua nhặt được, truyền đi khắp nơi tìm người đi vừa giày. Cuối cùng giày vừa chân Tấm, nàng được đưa vào cung làm hoàng hậu. Mẹ con Cám ghen ghét, tìm cách hãm hại Tấm nhiều lần...",
+            "Sau bao gian truân, Tấm trở về, vạch tội mẹ con Cám. Nàng và nhà vua sum vầy, dân gian ca ngợi đức hiền lành và sự công bằng của Tấm. Hết chuyện."
+          ]
+        }
+      },
+      "thieu-nhi": {
+        "chu-be-cham-chi": {
+          id: "thieu-nhi/chu-be-cham-chi",
+          title: "Chú bé chăm chỉ",
+          pages: [
+            "Ngày xửa ngày xưa…",
+            "…câu chuyện kết thúc có hậu."
+          ]
+        }
+      }
+    };
+
+    var currentGenre = null, currentStory = null, currentPage = 0;
+
+    function loadStories(genre) {
+      currentGenre = genre;
+      var list = $("story-list");
+      list.innerHTML = "";
+      var g = STORIES[genre] || {};
+      for (var key in g) {
+        if (!g.hasOwnProperty(key)) continue;
+        var s = g[key];
+        var div = document.createElement("div");
+        div.className = "item";
+        div.innerHTML = s.title;
+        div.onclick = (function (id) {
+          return function () { openStory(id); };
+        })(s.id);
+        list.appendChild(div);
+      }
+      $("story-genre").style.display = "none";
+      list.style.display = "block";
+      $("reader").style.display = "none";
+      window.scrollTo(0,0);
+    }
+
+    function findStoryById(id) {
+      for (var g in STORIES) {
+        if (!STORIES.hasOwnProperty(g)) continue;
+        var cat = STORIES[g];
+        for (var k in cat) {
+          if (!cat.hasOwnProperty(k)) continue;
+          if (cat[k].id === id) return cat[k];
+        }
+      }
+      return null;
+    }
+
+    function openStory(id) {
+      currentStory = findStoryById(id);
+      if (!currentStory) return;
+      currentPage = 0;
+      renderPage();
+      $("story-list").style.display = "none";
+      $("reader").style.display = "block";
+      window.scrollTo(0,0);
+    }
+
+    function renderPage() {
+      $("story-title").innerHTML = currentStory.title || "";
+      var pages = currentStory.pages || [];
+      if (currentPage < 0) currentPage = 0;
+      if (currentPage >= pages.length) currentPage = pages.length - 1;
+      $("story-content").innerHTML = pages[currentPage] || "";
+      $("page-info").innerHTML = "Trang " + (currentPage + 1) + "/" + pages.length;
+    }
+
+    function nextPage() { currentPage++; renderPage(); }
+    function prevPage() { currentPage--; renderPage(); }
+
+    function backToStoryList() {
+      $("reader").style.display = "none";
+      $("story-list").style.display = "block";
+      window.scrollTo(0,0);
+    }
+
+    (function () {
+      window.__initTheme && window.__initTheme();
+    })();
+  </script>
 </body>
 </html>

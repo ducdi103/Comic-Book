@@ -1,51 +1,35 @@
 <!DOCTYPE html>
 <html lang="vi">
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-    <title>Giải Trí - Lumia 520</title>
-    <link rel="stylesheet" href="styles.css" />
+  <meta charset="UTF-8">
+  <title>Trang chủ</title>
+  <meta http-equiv="X-UA-Compatible" content="IE=Edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+  <link rel="stylesheet" href="styles.css">
 </head>
-<body>
-    <nav class="navbar">
-        <span class="logo">🎮 Giải Trí Tổng Hợp</span>
-        <div class="nav-btns">
-            <button onclick="history.back()">⬅️ Quay Lại</button>
-            <button onclick="window.location.href='index.html'">🏠 Trang Chủ</button>
-            <button id="toggle-dark">🌙</button>
-        </div>
-    </nav>
-    <main>
-        <section id="main-menu">
-            <h2>Chọn một lĩnh vực</h2>
-            <a href="doctruyen.html" class="menu-button">📚 truyện</a>
-            <a href="#" class="menu-button" onclick="alert('Chức năng sắp ra mắt!');">🎬 Xem Phim</a>
-            <a href="#" class="menu-button" onclick="alert('Chức năng sắp ra mắt!');">🎵 Nghe Nhạc</a>
-            <a href="#" class="menu-button" onclick="alert('Chức năng sắp ra mắt!');">🕹️ Chơi Game</a>
-        </section>
-    </main>
+<body id="">
+  <div class="navbar">
+    <h1>📚📽️ Trung tâm Giải trí</h1>
+    <div class="btn-row">
+      <button id="toggle-dark">🌙 Dark</button>
+      <a class="btn" href="doctruyen.html">📖 Đọc truyện</a>
+      <a class="btn" href="xemphim.html">🎬 Xem phim</a>
+    </div>
+  </div>
 
-    <footer>
-        <p>&copy; 2025 Giải Trí dành cho Lumia 520</p>
-    </footer>
+  <div class="wrap">
+    <div class="card">
+      <h2>Xin chào!</h2>
+      <p>Chọn chức năng bên trên để bắt đầu. Giao diện đã được tối ưu cho Nokia Lumia 520.</p>
+    </div>
+  </div>
 
-    <script>
-        document.getElementById("toggle-dark").onclick = function () {
-            var body = document.body;
-            if (body.id === "dark-mode") {
-                body.id = "";
-                localStorage.setItem("theme", "light");
-            } else {
-                body.id = "dark-mode";
-                localStorage.setItem("theme", "dark");
-            }
-        };
-        window.addEventListener("load", function () {
-            var theme = localStorage.getItem("theme");
-            if (theme === "dark") {
-                document.body.id = "dark-mode";
-            }
-        });
-    </script>
+  <div class="footer">© 2025</div>
+  <script src="script.js"></script>
+  <script>
+    (function () {
+      window.__initTheme && window.__initTheme();
+    })();
+  </script>
 </body>
 </html>
