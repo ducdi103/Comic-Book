@@ -1,81 +1,200 @@
-/* ====== Reset cơ bản, phù hợp IE Mobile ====== */
+/* ===============================
+   Lumia Metro UI — IE Mobile friendly
+   - Không dùng flex hiện đại
+   - Nút to, màu rõ, bóng nhẹ
+   - Dark Mode qua body#dark-mode
+   =============================== */
+
+/* Reset cơ bản */
 html, body { margin:0; padding:0; }
+* { box-sizing: border-box; }
+
+/* Màu chủ đạo */
+:root {
+  /* Màu sáng */
+  --bg: #ffffff;
+  --text: #0f172a;           /* slate-900 */
+  --muted: #475569;          /* slate-600 */
+
+  --surface: #f7f7f9;        /* nền thẻ */
+  --border: #dcdfe4;
+  --primary: #2563eb;        /* xanh Metro */
+  --primary-ink: #eaf2ff;
+  --accent: #16a34a;         /* xanh lá */
+  --warn: #f59e0b;           /* vàng */
+
+  /* Bóng */
+  --shadow: 0 2px 8px rgba(15, 23, 42, .08);
+}
+
+/* Dark mode */
+body#dark-mode {
+  --bg: #111216;
+  --text: #e5e7eb;           /* gray-200 */
+  --muted: #a1a1aa;          /* zinc-400 */
+  --surface: #1a1b22;
+  --border: #2b2d36;
+  --primary: #60a5fa;        /* xanh nhẹ */
+  --primary-ink: #0b1220;
+  --accent: #22c55e;
+  --warn: #fbbf24;
+  --shadow: 0 2px 10px rgba(0,0,0,.35);
+}
+
+/* Toàn trang */
 body {
-  font-family: Segoe UI, Tahoma, Arial, sans-serif;
-  background:#ffffff;
-  color:#000000;
+  font-family: "Segoe UI", Tahoma, Arial, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  line-height: 1.6;
 }
-body#dark-mode { background:#111111; color:#eeeeee; }
 
+/* Tiêu đề */
+h1, h2, h3 { margin: 8px 0 6px; line-height: 1.25; }
+h1 { font-size: 20px; }
+h2 { font-size: 18px; }
+h3 { font-size: 16px; }
+
+/* Navbar */
 .navbar {
-  background:#eeeeee;
-  border-bottom:1px solid #cccccc;
-  text-align:center;
-  padding:10px;
+  background: linear-gradient( to bottom, var(--surface), var(--bg) );
+  border-bottom: 1px solid var(--border);
+  padding: 10px;
+  text-align: center;
+  position: sticky;           /* IE Mobile bỏ qua -> vẫn ổn */
+  top: 0;
+  z-index: 5;
 }
-body#dark-mode .navbar { background:#222222; border-color:#444444; color:#eeeeee; }
+.navbar h1 {
+  margin: 2px 0 8px;
+  letter-spacing: .2px;
+}
 
-h1, h2, h3 { margin:8px 0; }
-
-.wrap { padding:10px; }
-
+/* Footer */
 .footer {
-  background:#eeeeee;
-  border-top:1px solid #cccccc;
-  text-align:center;
-  padding:8px;
+  background: linear-gradient( to top, var(--surface), var(--bg) );
+  border-top: 1px solid var(--border);
+  text-align: center;
+  padding: 10px;
+  color: var(--muted);
 }
-body#dark-mode .footer { background:#222222; border-color:#444444; color:#eeeeee; }
 
-/* Nút lớn dễ chạm */
+/* Khoảng trống nội dung */
+.wrap { padding: 10px; }
+
+/* Nút & Link kiểu Metro */
 button, .btn {
-  display:inline-block;
-  padding:10px 14px;
-  margin:4px;
-  border:0;
-  background:#dddddd;
-  color:#000;
-  text-decoration:none;
-  border-radius:6px;
-  font-weight:bold;
-  min-height:44px; /* thân thiện chạm */
+  display: inline-block;
+  min-height: 44px;             /* thân thiện chạm */
+  padding: 10px 14px;
+  margin: 4px;
+  border: 0;
+  border-radius: 10px;
+  background: var(--primary);
+  color: #fff !important;
+  text-decoration: none;
+  font-weight: 700;
+  letter-spacing: .2px;
+  box-shadow: var(--shadow);
   -ms-touch-action: manipulation;
   touch-action: manipulation;
+  transition: transform .05s ease, opacity .15s ease;
 }
-body#dark-mode button,
-body#dark-mode .btn { background:#444444; color:#eeeeee; }
+button:active, .btn:active { transform: translateY(1px) scale(.99); }
+button[disabled], .btn[disabled] { opacity: .6; }
 
-/* Hộp nội dung */
+/* Nút phụ */
+.btn-secondary, .toolbar button {
+  background: #e5e7eb;
+  color: #111;
+}
+body#dark-mode .btn-secondary,
+body#dark-mode .toolbar button {
+  background: #2f3240;
+  color: #e5e7eb;
+}
+
+/* Hàng nút căn giữa */
+.btn-row, .toolbar { text-align: center; margin: 8px 0; }
+.toolbar button { margin: 4px 6px; }
+
+/* Thẻ nội dung (Card) */
 .card {
-  background:#f7f7f7;
-  border:1px solid #cccccc;
-  border-radius:8px;
-  padding:12px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 12px;
+  box-shadow: var(--shadow);
 }
-body#dark-mode .card { background:#2e2e2e; border-color:#555555; }
 
-/* List item */
+/* Item danh sách (thể loại / phim / truyện) */
 .item {
-  background:#f5f5f5;
-  border:1px solid #cccccc;
-  border-radius:8px;
-  padding:12px;
-  margin:8px 0;
-  cursor:pointer;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 12px;
+  margin: 8px 0;
+  cursor: pointer;
+  box-shadow: var(--shadow);
 }
-body#dark-mode .item { background:#333333; border-color:#555555; color:#eeeeee; }
+.item-title { font-weight: 700; }
+.item small { color: var(--muted); }
 
-/* Thanh công cụ đơn giản (không dùng flex hiện đại) */
-.btn-row { text-align:center; }
-.toolbar { text-align:center; margin:8px 0; }
+/* Chip/nhãn (nếu dùng) */
+.tag {
+  display: inline-block;
+  padding: 4px 8px;
+  border-radius: 999px;
+  background: var(--primary-ink);
+  color: var(--primary);
+  font-size: 12px;
+  margin-left: 6px;
+  vertical-align: middle;
+}
+body#dark-mode .tag { background: var(--primary-ink); color: var(--primary); }
 
+/* Video player */
 .video {
-  width:100%;
-  max-height:320px;
-  background:#000000;
-  border-radius:8px;
+  width: 100%;
+  max-height: 320px;
+  background: #000;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow);
 }
 
-/* Link đơn giản */
-a { color:#0050b3; }
-body#dark-mode a { color:#6fb6ff; }
+/* Văn bản phụ */
+.muted, #movie-desc, #page-info { color: var(--muted); }
+
+/* Liên kết */
+a { color: var(--primary); }
+a:active { opacity: .9; }
+body#dark-mode a { color: var(--primary); }
+
+/* Danh sách 2 cột đơn giản (tùy chọn dùng ở list) */
+.grid-2 { text-align: center; }
+.grid-2 .col {
+  display: inline-block;
+  width: 48%;
+  margin: 1%;
+  vertical-align: top;
+}
+.grid-2 .col .item { margin: 6px 0; }
+
+/* Khoảng cách nhỏ tiện dụng */
+.mt-8 { margin-top: 8px; }
+.mb-8 { margin-bottom: 8px; }
+
+/* Hiệu ứng chạm nhẹ cho item */
+.item:active { transform: translateY(1px); }
+
+/* Input (nếu sau này thêm form) */
+input[type="text"], input[type="search"] {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--bg);
+  color: var(--text);
+  box-shadow: var(--shadow);
+}
