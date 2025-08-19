@@ -1,0 +1,416 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <title>🎮 Mario Mini — 10 màn</title>
+  <meta http-equiv="X-UA-Compatible" content="IE=Edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+  <link rel="stylesheet" href="styles.css">
+  <style>
+    .game-wrap { padding:10px; text-align:center; }
+    #gameCanvas{
+      background:#0a0a0a; border:1px solid var(--border);
+      border-radius:12px; box-shadow:var(--shadow);
+      width:100%; max-width:360px; height:auto;
+    }
+    .hud{ margin:8px 0; }
+    .hud .pill{
+      display:inline-block; padding:6px 10px; border-radius:999px;
+      background:var(--surface); border:1px solid var(--border);
+      margin:2px 4px; color:var(--text);
+    }
+    .ctrl{ margin-top:8px; }
+    .ctrl button{ min-width:92px; }
+    .ctrl .wide{ min-width:188px; }
+    .note{ color:var(--muted); font-size:12px; margin-top:6px; }
+  </style>
+</head>
+<body id="">
+  <div class="navbar">
+    <h1>🎮 Mario Mini (10 màn)</h1>
+    <div class="btn-row">
+      <button id="toggle-dark">🌙 Dark</button>
+      <a class="btn" href="index.html">🏠 Trang chủ</a>
+    </div>
+  </div>
+
+  <div class="game-wrap">
+    <div class="card">
+      <canvas id="gameCanvas" width="320" height="180"></canvas>
+      <div class="hud">
+        <span class="pill">Màn: <b id="lv">1/10</b></span>
+        <span class="pill">Điểm: <b id="score">0</b></span>
+        <span class="pill">Kỷ lục: <b id="best">0</b></span>
+        <span class="pill" id="stateTxt">Sẵn sàng</span>
+      </div>
+      <div class="ctrl">
+        <button class="btn-secondary" id="btnLeft">⬅️ Trái</button>
+        <button class="btn-secondary" id="btnRight">➡️ Phải</button>
+        <button class="btn-secondary wide" id="btnJump">⬆️ Nhảy</button>
+      </div>
+      <div class="ctrl">
+        <button id="btnPause">⏸️ Tạm dừng</button>
+        <button id="btnRestart">🔁 Chơi lại</button>
+        <button id="btnNext">⏭️ Màn kế</button>
+      </div>
+      <div class="note">Mẹo: Giữ Trái/Phải để chạy, nhấn Nhảy để vượt hố. Thu thập coin 💰, chạm cờ 🏁 để qua màn.</div>
+    </div>
+  </div>
+
+  <div class="footer">© 2025</div>
+
+  <script src="script.js"></script>
+  <script>
+  (function () {
+    // Đồng bộ theme
+    window.__initTheme && window.__initTheme();
+
+    // Polyfill requestAnimationFrame cho WP8
+    var raf = window.requestAnimationFrame || window.msRequestAnimationFrame ||
+              function (cb) { return setTimeout(cb, 16); };
+    var caf = window.cancelAnimationFrame || window.msCancelAnimationFrame ||
+              function (id) { clearTimeout(id); };
+
+    // --------- Canvas ----------
+    var cvs = document.getElementById('gameCanvas');
+    var ctx = cvs.getContext('2d');
+    var W = cvs.width, H = cvs.height;
+
+    // --------- HUD ----------
+    var lvEl = document.getElementById('lv');
+    var scoreEl = document.getElementById('score');
+    var bestEl  = document.getElementById('best');
+    var stateEl = document.getElementById('stateTxt');
+
+    // --------- Nút ----------
+    var btnLeft = document.getElementById('btnLeft');
+    var btnRight= document.getElementById('btnRight');
+    var btnJump = document.getElementById('btnJump');
+    var btnPause= document.getElementById('btnPause');
+    var btnRestart=document.getElementById('btnRestart');
+    var btnNext = document.getElementById('btnNext');
+
+    // --------- Tham số vật lý (ES5) ----------
+    var TILE = 10;                 // hệ lưới 10px
+    var GRAV = 0.55;
+    var MOVE_ACCEL = 0.5;
+    var MOVE_MAX = 2.2;
+    var FRICTION = 0.85;
+    var JUMP_VEL = -7.5;
+
+    // --------- Trạng thái ----------
+    var score = 0;
+    var best  = readBest();
+    bestEl.innerHTML = best;
+
+    var levelIdx = readProgress(); // 0..9
+    lvEl.innerHTML = (levelIdx+1) + "/10";
+
+    var paused = false, running = true, animId = 0;
+
+    // Camera
+    var camX = 0, camY = 0;
+
+    // Thế giới/màn chơi
+    var world = null;   // {width,height, platforms[], coins[], flag{ x,y,w,h } , spawn{ x,y } }
+    var player = null;  // {x,y,w,h,vx,vy,onGround,dir}
+
+    // Điều khiển
+    var holdLeft = false, holdRight = false;
+
+    function bindHold(btn, setter) {
+      var start = function (e) { setter(true); e.preventDefault(); };
+      var end   = function (e) { setter(false); e.preventDefault(); };
+      if (btn.addEventListener) {
+        btn.addEventListener('mousedown', start, false);
+        btn.addEventListener('touchstart', start, false);
+        btn.addEventListener('mouseup', end, false);
+        btn.addEventListener('mouseleave', end, false);
+        btn.addEventListener('touchend', end, false);
+        btn.addEventListener('touchcancel', end, false);
+      } else {
+        btn.onmousedown = start; btn.onmouseup = end; btn.onmouseleave = end; btn.ontouchstart = start; btn.ontouchend = end;
+      }
+    }
+    bindHold(btnLeft, function(v){ holdLeft = v; });
+    bindHold(btnRight,function(v){ holdRight= v; });
+    if (btnJump.addEventListener) btnJump.addEventListener('click', jump, false); else btnJump.onclick = jump;
+
+    if (btnPause.addEventListener) btnPause.addEventListener('click', togglePause, false); else btnPause.onclick = togglePause;
+    if (btnRestart.addEventListener) btnRestart.addEventListener('click', restart, false); else btnRestart.onclick = restart;
+    if (btnNext.addEventListener) btnNext.addEventListener('click', nextLevel, false); else btnNext.onclick = nextLevel;
+
+    // --------- Lưu trữ ---------
+    function readBest() {
+      try { var n = localStorage.getItem('mario_best'); return n? parseInt(n,10):0; } catch(e){ return 0; }
+    }
+    function writeBest(v) {
+      try { localStorage.setItem('mario_best', String(v)); } catch(e){}
+    }
+    function readProgress() {
+      try { var n = localStorage.getItem('mario_progress'); return n? Math.max(0, Math.min(9, parseInt(n,10))):0; } catch(e){ return 0; }
+    }
+    function writeProgress(idx) {
+      try { localStorage.setItem('mario_progress', String(idx)); } catch(e){}
+    }
+
+    // ================== SINH 10 MÀN ==================
+    // Mỗi màn dài 2000~2600px, nền gạch + platform + hố
+    function buildLevel(idx) {
+      var i, x;
+      var width = 2000 + idx*60; // khó dần
+      var height = H;
+
+      var platforms = [];
+      var groundY = H - 20;      // mặt đất dày 20px
+      // Nền đất trải dài + vài hố
+      var step = 320 + Math.floor(idx*8);
+      var holeW = 30 + idx*2;
+      var lastX = 0;
+      for (x = 0; x < width; x += step) {
+        var hole = (idx>0 && (x % (step*2)===0)) ? holeW : 0;
+        // đất trước hố
+        platforms.push({x:lastX, y:groundY, w: step - hole, h: 20});
+        lastX += step + 0; // di chuyển con trỏ
+        // bỏ qua phần hố (trống)
+        if (hole>0) lastX += hole;
+      }
+      // Nền cuối nếu thiếu
+      if (lastX < width) platforms.push({x:lastX, y:groundY, w: width-lastX, h:20});
+
+      // Thêm các bệ trên cao
+      for (i=0;i<8+idx;i++){
+        var px = 120 + i* (160 - idx*2) + (idx*7 % 50);
+        var py = groundY - (40 + ((i*37 + idx*13)%80));
+        var pw = 60 + ((i*23) % 30);
+        platforms.push({x:px, y:py, w:pw, h:10});
+      }
+
+      // Coin
+      var coins = [];
+      for (i=0;i<22;i++){
+        coins.push({x: 80 + i*90 + (idx*11%40), y: groundY-30 - ((i*13)%40), r:4, taken:false});
+      }
+
+      // Cờ đích
+      var flagX = width - 80;
+      var flag = {x:flagX, y:groundY-60, w:14, h:60};
+
+      // Vị trí xuất phát
+      var spawn = {x: 30, y: groundY - 18};
+
+      return { width: width, height: height, platforms: platforms, coins: coins, flag: flag, spawn: spawn };
+    }
+
+    // ================== PLAYER ==================
+    function spawnPlayer() {
+      var s = world.spawn;
+      player = { x:s.x, y:s.y, w: 10, h: 14, vx:0, vy:0, onGround:false, dir:1 };
+      camX = 0; camY = 0;
+    }
+
+    function jump() {
+      if (player && player.onGround) {
+        player.vy = JUMP_VEL;
+        player.onGround = false;
+      }
+    }
+
+    // ================== VÒNG LẶP ==================
+    function togglePause(){
+      paused = !paused;
+      stateEl.innerHTML = paused ? "Tạm dừng" : "Đang chơi";
+      if (!paused) loop(); else if (animId){ caf(animId); animId=0; }
+    }
+
+    function restart(){
+      score = 0;
+      loadLevel(levelIdx, true);
+      stateEl.innerHTML = "Đang chơi";
+      loop();
+    }
+
+    function nextLevel(){
+      // chỉ cho next khi đã về đích hoặc muốn luyện màn sau
+      levelIdx = (levelIdx+1) % 10;
+      writeProgress(levelIdx);
+      lvEl.innerHTML = (levelIdx+1) + "/10";
+      score = 0;
+      loadLevel(levelIdx, true);
+      stateEl.innerHTML = "Đang chơi";
+      loop();
+    }
+
+    function loadLevel(idx, resetCam){
+      world = buildLevel(idx);
+      spawnPlayer();
+      if (resetCam){ camX = 0; camY = 0; }
+    }
+
+    function clamp(v,a,b){ return v<a?a:(v>b?b:v); }
+
+    // AABB collision resolve (trục X rồi trục Y)
+    function rectsOverlap(a,b){
+      return !(a.x+a.w<=b.x || b.x+b.w<=a.x || a.y+a.h<=b.y || b.y+b.h<=a.y);
+    }
+
+    function moveAndCollide() {
+      var i, p, a, b;
+
+      // X input
+      if (holdLeft)  { player.vx -= MOVE_ACCEL; player.dir = -1; }
+      if (holdRight) { player.vx += MOVE_ACCEL; player.dir =  1; }
+      player.vx = clamp(player.vx, -MOVE_MAX, MOVE_MAX);
+      if (!holdLeft && !holdRight) player.vx *= FRICTION;
+
+      // Gravity
+      player.vy += GRAV; if (player.vy > 9) player.vy = 9;
+
+      // --- Move X ---
+      player.x += player.vx;
+      a = {x:player.x, y:player.y, w:player.w, h:player.h};
+      for (i=0;i<world.platforms.length;i++){
+        p = world.platforms[i];
+        if (rectsOverlap(a,p)){
+          if (player.vx>0){ player.x = p.x - player.w; }
+          else if (player.vx<0){ player.x = p.x + p.w; }
+          player.vx = 0;
+          a.x = player.x;
+        }
+      }
+
+      // --- Move Y ---
+      var wasOnGround = player.onGround;
+      player.onGround = false;
+      player.y += player.vy;
+      a.y = player.y;
+      for (i=0;i<world.platforms.length;i++){
+        p = world.platforms[i];
+        if (rectsOverlap(a,p)){
+          if (player.vy>0){ // rơi xuống sàn
+            player.y = p.y - player.h;
+            player.vy = 0;
+            player.onGround = true;
+          } else if (player.vy<0){ // đập đầu
+            player.y = p.y + p.h;
+            player.vy = 0.2;
+          }
+          a.y = player.y;
+        }
+      }
+
+      // Rơi xuống hố (dưới màn hình) -> thua
+      if (player.y > H + 60){
+        running = false;
+        stateEl.innerHTML = "💥 Rơi hố!";
+        if (score>best){ best=score; bestEl.innerHTML=best; writeBest(best); }
+      }
+    }
+
+    function update(){
+      if (!running || paused) return;
+
+      moveAndCollide();
+
+      // Ăn coin
+      var i, c, hit;
+      for (i=0;i<world.coins.length;i++){
+        c = world.coins[i];
+        if (!c.taken){
+          hit = !(player.x+player.w < c.x- c.r || player.x > c.x + c.r || player.y+player.h < c.y- c.r || player.y > c.y + c.r);
+          if (hit){ c.taken = true; score += 10; scoreEl.innerHTML = String(score); }
+        }
+      }
+
+      // Về đích
+      if (rectsOverlap(player, world.flag)){
+        running = false;
+        stateEl.innerHTML = "🏁 Hoàn thành!";
+        score += 100 + levelIdx*10;
+        scoreEl.innerHTML = String(score);
+        if (score>best){ best=score; bestEl.innerHTML=best; writeBest(best); }
+
+        // mở màn tiếp theo
+        if (levelIdx < 9){ levelIdx++; writeProgress(levelIdx); lvEl.innerHTML = (levelIdx+1)+"/10"; }
+      }
+
+      // Camera bám người chơi (giới hạn trong world)
+      camX = clamp(player.x - W/2 + player.w/2, 0, world.width - W);
+    }
+
+    // Vẽ khối chữ nhật
+    function fillRect(x,y,w,h,color){ ctx.fillStyle=color; ctx.fillRect(Math.floor(x),Math.floor(y),Math.floor(w),Math.floor(h)); }
+
+    function draw(){
+      var dark = (document.body.id==='dark-mode');
+      // nền bầu trời
+      ctx.fillStyle = dark ? '#0b0b0f' : '#87ceeb';
+      ctx.fillRect(0,0,W,H);
+
+      // mặt đất & platform
+      var i,p,cx;
+      for(i=0;i<world.platforms.length;i++){
+        p = world.platforms[i];
+        cx = p.x - camX;
+        if (cx+p.w < -20 || cx > W+20) continue;
+        fillRect(cx, p.y, p.w, p.h, dark? '#334155' : '#5aa35a');
+        // viền nhẹ
+        fillRect(cx, p.y, p.w, 2, dark? '#475569' : '#7ac77a');
+      }
+
+      // Cờ đích
+      var f = world.flag, fx = f.x - camX;
+      fillRect(fx+6, f.y, 2, f.h, dark? '#94a3b8' : '#5b6068');         // cột
+      fillRect(fx-8, f.y, 14, 10, dark? '#60a5fa' : '#2563eb');          // lá cờ
+      fillRect(fx, f.y+f.h, 16, 4, dark? '#475569' : '#9ca3af');        // chân cột
+
+      // Coin
+      for(i=0;i<world.coins.length;i++){
+        var cc = world.coins[i];
+        if (cc.taken) continue;
+        var cx2 = cc.x - camX;
+        if (cx2 < -20 || cx2 > W+20) continue;
+        ctx.beginPath();
+        ctx.arc(Math.floor(cx2), Math.floor(cc.y), cc.r, 0, Math.PI*2, false);
+        ctx.fillStyle = dark ? '#fbbf24' : '#f59e0b';
+        ctx.fill();
+      }
+
+      // Player (áo đỏ, quần xanh)
+      var px = player.x - camX;
+      fillRect(px, player.y, player.w, player.h, dark? '#ef4444' : '#dc2626'); // thân
+      fillRect(px, player.y+8, player.w, 6, dark? '#60a5fa' : '#2563eb');      // quần
+      // mũ nhỏ
+      fillRect(px, player.y-2, player.w, 2, dark? '#ef4444' : '#dc2626');
+
+      // Khi thua, overlay
+      if (!running && stateEl.innerHTML.indexOf("Hoàn thành")===-1){
+        ctx.fillStyle = 'rgba(0,0,0,0.45)';
+        ctx.fillRect(0,0,W,H);
+        ctx.fillStyle = '#fff';
+        ctx.font = 'bold 16px Segoe UI, Tahoma';
+        ctx.fillText('Thua rồi! Điểm: ' + score, 86, 82);
+        ctx.fillText('Nhấn "Chơi lại"', 102, 102);
+      }
+    }
+
+    function loop(){
+      if (!running || paused){ draw(); return; }
+      update();
+      draw();
+      animId = raf(loop);
+    }
+
+    // ---------- Khởi tạo ----------
+    function start(){
+      running = true; paused = false; stateEl.innerHTML = "Đang chơi";
+      score = 0; scoreEl.innerHTML = "0";
+      loadLevel(levelIdx, true);
+      loop();
+    }
+    start();
+
+  })();
+  </script>
+</body>
+</html>
